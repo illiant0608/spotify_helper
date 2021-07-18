@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/zmb3/spotify"
 	"log"
@@ -26,30 +27,46 @@ var (
 	state = "abc123"
 )
 
-func main () {
+type Result struct {
+	Val        string
+	NeedUpdate bool
+}
+
+func main() {
 	var client *spotify.Client
 	auth.SetAuthInfo("cf33e39b15854c21bd8851e05fa1a1c1", "fe9d073853ef439eaffeacdbf3e63e0b")
+	lastTrack := ""
 	http.HandleFunc("/callback", completeAuth)
 	http.HandleFunc("/player/", func(w http.ResponseWriter, r *http.Request) {
 		action := strings.TrimPrefix(r.URL.Path, "/player/")
 		fmt.Println("Got request for:", action)
 		var err error
 		var currentPlaying *spotify.CurrentlyPlaying
-		var result string
+		var track string
+		result := Result{
+			Val:        "",
+			NeedUpdate: true,
+		}
 		w.Header().Set("Content-Type", "text/html")
 		switch action {
 		case "current":
 			currentPlaying, err = client.PlayerCurrentlyPlaying()
 			if err != nil || currentPlaying == nil || currentPlaying.Item == nil {
-                log.Println("Get current playing failed, get empty result")
-                result = ""
-                break
+				log.Println("Get current playing failed, get empty result")
+				track = ""
+				break
 			}
-			result = fmt.Sprintf("♫ %s-%s", currentPlaying.Item.Name, currentPlaying.Item.Artists[0].Name)
+			track = fmt.Sprintf("♫ %s-%s", currentPlaying.Item.Name, currentPlaying.Item.Artists[0].Name)
+			result.Val = track
 		}
-
-		//w.Write([]byte(result))
-		fmt.Fprint(w, result)
+		fmt.Printf("lastTrack: %s, currentTrack: %s", lastTrack, track)
+		if lastTrack == track {
+			result.NeedUpdate = false
+		}
+		lastTrack = track
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusCreated)
+		json.NewEncoder(w).Encode(result)
 	})
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
