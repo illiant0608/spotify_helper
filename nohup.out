@@ -1,0 +1,11 @@
+Please log in to Spotify by visiting the following page in your browser: https://accounts.spotify.com/authorize?client_id=cf33e39b15854c21bd8851e05fa1a1c1&redirect_uri=http%3A%2F%2F10.227.64.187%3A8080%2Fcallback&response_type=code&scope=user-read-currently-playing+user-read-playback-state+user-modify-playback-state&state=abc123
+You are logged in as: an
+2021/07/18 21:39:06 Got request for: /favicon.ico
+Got request for: current
+Got request for: current
+Got request for: current
+Got request for: current
+Got request for: current
+Got request for: current
+Got request for: current
+Got request for: current

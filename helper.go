@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-const redirectURI = "http://localhost:8080/callback"
+const redirectURI = "http://10.227.64.187:8080/callback"
 
 var html = `
 <br/>
@@ -29,7 +29,6 @@ var (
 func main () {
 	var client *spotify.Client
 	auth.SetAuthInfo("cf33e39b15854c21bd8851e05fa1a1c1", "fe9d073853ef439eaffeacdbf3e63e0b")
-
 	http.HandleFunc("/callback", completeAuth)
 	http.HandleFunc("/player/", func(w http.ResponseWriter, r *http.Request) {
 		action := strings.TrimPrefix(r.URL.Path, "/player/")
@@ -41,10 +40,12 @@ func main () {
 		switch action {
 		case "current":
 			currentPlaying, err = client.PlayerCurrentlyPlaying()
-			if err != nil || currentPlaying == nil {
-				log.Fatal("get currently playing failed")
+			if err != nil || currentPlaying == nil || currentPlaying.Item == nil {
+                log.Println("Get current playing failed, get empty result")
+                result = ""
+                break
 			}
-			result = fmt.Sprintf("%s-%s", currentPlaying.Item.Name, currentPlaying.Item.Artists[0].Name)
+			result = fmt.Sprintf("♫ %s-%s", currentPlaying.Item.Name, currentPlaying.Item.Artists[0].Name)
 		}
 
 		//w.Write([]byte(result))
